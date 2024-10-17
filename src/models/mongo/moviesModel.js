@@ -24,7 +24,22 @@ async function getMovieById(db, id) {
   return data;
 }
 
+async function getMoviesByActorId(db, actorId) {
+  const filter = { "actors.id": mongo.ObjectId.createFromHexString(actorId) }
+
+  const data = await db.run('movies')
+  .then(async coll => {
+    const cursor = coll.find(filter)
+    const result = await cursor.toArray();
+    return {result, cursor};
+  })
+  data.cursor.close();
+
+  return data.result;
+}
+
 module.exports = {
   getMovies,
-  getMovieById
+  getMovieById,
+  getMoviesByActorId
 }

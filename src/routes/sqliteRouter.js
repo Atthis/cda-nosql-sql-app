@@ -3,13 +3,14 @@ const router = express.Router();
 
 const sqliteDB  = require('../db/sqliteDriver.js');
 
-const { getMovies, getMoviesWithAllData, getMovieById } = require('../models/sqlite/moviesModel.js')
-const { getActors } = require('../models/sqlite/actorsModel.js')
+const { getMovies, getMoviesWithAllData, getMovieById, getMoviesByActorId } = require('../models/sqlite/moviesModel.js')
+const { getActors, getActorById } = require('../models/sqlite/actorsModel.js')
 
 const { generateBaseSqlite } = require('../views/baseSqlite.js')
 const { generateAddForm } = require('../views/addForm.js')
 const { getIndex } = require('../views/home.js')
-const { generateMovieCard } = require('../views/movie.js')
+const { generateMovieCard } = require('../views/movie.js');
+const { generateActorCard } = require('../views/actor.js');
 
 router.get('/', async function(req, res) {
   const data = {};
@@ -45,6 +46,20 @@ router.get('/add', async function(req, res) {
 
   const page = generateAddForm(data);
   res.send(page);
+})
+
+router.get('/actors/:id', async function(req, res) {
+  const actorId = req.params.id;
+
+  const data = {};
+
+  data.actor = await getActorById(sqliteDB, actorId);
+  data.actor.movies = await getMoviesByActorId(sqliteDB, actorId);
+
+  const body = generateActorCard(data);
+  const page = generateBaseSqlite(data.actor.name, body);
+
+  res.send(page)
 })
 
 module.exports = router;

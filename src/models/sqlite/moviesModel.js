@@ -123,8 +123,33 @@ function getMovieById(db, id) {
   })
 }
 
+async function getMoviesByActorId(db, actorId) {
+  const sql = `
+    select m.id , m.title
+    from movies m
+      left join movies_actors ma on ma.idMovie = m.id
+    where ma.idActor = ?;
+  `;
+
+  return new Promise(function (resolve, reject) {
+    db.all(sql, actorId, async function (err, rows) {
+      if (err) {
+        reject(err)
+      } else {
+        if (rows.length <= 0) {
+          resolve({result: null})
+        } else {
+          const result = await rows;
+          resolve(result)
+        }
+      }
+    })
+  })
+}
+
 module.exports = {
   getMovies,
   getMoviesWithAllData,
-  getMovieById
+  getMovieById,
+  getMoviesByActorId
 }

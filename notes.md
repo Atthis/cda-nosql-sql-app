@@ -1,6 +1,6 @@
-update acteur
+## Update acteur
 
-mongo
+### Mongo
 
 -> sélectionner l'acteur
 -> modifier son nom
@@ -12,9 +12,6 @@ db.products.updateOne(
    { $set: { "details.make": "Kustom Kidz" } }
 )
 
-{ <update operator>: { "<array>.$[<identifier>]" : value } },
-{ arrayFilters: [ { <identifier>: <condition> } ] }
-
 https://www.mongodb.com/docs/manual/reference/operator/update/positional/
 -> db.movies.updateMany(
   {
@@ -25,3 +22,7 @@ https://www.mongodb.com/docs/manual/reference/operator/update/positional/
   {	 $set: { "actors.$.name": "boo" }
 	}
 )
+
+### SQLite
+
+modification de la table acteur seulement.
