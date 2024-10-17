@@ -1,0 +1,25 @@
+{
+  "name": "nosql-cda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "DEBUG=express:* ./node_modules/.bin/nodemon src/server.js",
+    "create-sqldb": "node 'src/migration/createDB.js'",
+    "migrate-sqldb": "node 'src/migration/insertSQLDBData.js'",
+    "create-nsqlcoll": "node 'src/migration/createNoSQLcoll.js'",
+    "migrate-nsqldoc": "node 'src/migration/insertNoSQLColl.js'",
+    "reset-sqldb": "rm 'src/db/database.db' && npm run create-db && npm run dev"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mongodb": "^6.9.0",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
