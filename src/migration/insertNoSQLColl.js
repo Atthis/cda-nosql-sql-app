@@ -1,4 +1,4 @@
-const { mongoDatabase } = require('../db/mongoDriver.js');
+const { mongoClient } = require('../db/mongoDriver.js');
 
 // Insertion des genres
 const genres = [
@@ -55,38 +55,38 @@ const studios = [
 ];
 
 Promise.all([
-  mongoDatabase.run("genres").then(coll => coll.insertMany(genres)),
-  mongoDatabase.run("movies").then(coll => coll.insertMany(movies)),
-  mongoDatabase.run("directors").then(coll => coll.insertMany(directors)),
-  mongoDatabase.run("actors").then(coll => coll.insertMany(actors)),
-  mongoDatabase.run("studios").then(coll => coll.insertMany(studios))
+  mongoClient.run("genres").then(coll => coll.insertMany(genres)),
+  mongoClient.run("movies").then(coll => coll.insertMany(movies)),
+  mongoClient.run("directors").then(coll => coll.insertMany(directors)),
+  mongoClient.run("actors").then(coll => coll.insertMany(actors)),
+  mongoClient.run("studios").then(coll => coll.insertMany(studios))
 ]).then(async () => {
   // Récupération des IDs pour les relations
-  const movieIds = await mongoDatabase.run("movies")
+  const movieIds = await mongoClient.run("movies")
   .then(async coll => {
     const results = await coll.find().toArray();
     const ids = results.map(movie => movie._id);
     return ids;
     })
-  const genreIds = await mongoDatabase.run("genres")
+  const genreIds = await mongoClient.run("genres")
   .then(async coll => {
     const results = await coll.find().toArray();
     const ids = results.map(genre => {return {id: genre._id, name: genre.name}});
      return ids;
     })
-  const directorIds = await mongoDatabase.run("directors")
+  const directorIds = await mongoClient.run("directors")
   .then(async coll => {
     const results = await coll.find().toArray();
     const ids = results.map(director => {return {id: director._id, name: director.name}});
      return ids;
     })
-  const actorIds = await mongoDatabase.run("actors")
+  const actorIds = await mongoClient.run("actors")
   .then(async coll => {
     const results = await coll.find().toArray();
     const ids = results.map(actor => {return {id: actor._id, name: actor.name}});
      return ids;
     })
-  const studioIds = await mongoDatabase.run("studios")
+  const studioIds = await mongoClient.run("studios")
   .then(async coll => {
     const results = await coll.find().toArray();
     const ids = results.map(studio => {return {id: studio._id, name: studio.name}});
@@ -150,7 +150,7 @@ Promise.all([
     const promises = [];
 
     moviesGenres.forEach(({ movieId, genreId }) => {
-      promises.push(mongoDatabase.run("movies")
+      promises.push(mongoClient.run("movies")
         .then(coll => coll.updateOne(
           { _id: movieId },
           { $addToSet: { genres: genreId } }
@@ -158,21 +158,21 @@ Promise.all([
       )
     })
     moviesDirectors.forEach(({ movieId, directorId }) => {
-      promises.push(mongoDatabase.run("movies")
+      promises.push(mongoClient.run("movies")
       .then(coll => coll.updateOne(
         { _id: movieId },
         { $set: { director: directorId } }
       )))
     })
     moviesActors.forEach(({ movieId, actorId }) => {
-      promises.push(mongoDatabase.run("movies")
+      promises.push(mongoClient.run("movies")
       .then(coll => coll.updateOne(
         { _id: movieId },
         { $addToSet: { actors: actorId } }
       )))
     })
     moviesStudios.forEach(({ movieId, studioId }) => {
-      promises.push(mongoDatabase.run("movies")
+      promises.push(mongoClient.run("movies")
       .then(coll => coll.updateOne(
         { _id: movieId },
         { $addToSet: { studio: studioId } }
@@ -181,4 +181,4 @@ Promise.all([
 
     return await Promise.all(promises)
   })
-  .then(() => mongoDatabase.close());
+  .then(() => mongoClient.close());

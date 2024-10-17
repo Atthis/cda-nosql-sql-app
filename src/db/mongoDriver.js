@@ -5,7 +5,7 @@ const uri = "mongodb://localhost:27017";
 const mongoClient = new MongoClient(uri);
 const mongoDatabase = mongoClient.db('projetNoSQL');
 
-mongoDatabase.run = async function(collection) {
+mongoClient.run = async function(collection) {
   try {
     const DBCollection = mongoDatabase.collection(collection);
 
@@ -15,10 +15,8 @@ mongoDatabase.run = async function(collection) {
   }
 };
 
-mongoDatabase.close = async function() {
-  await mongoClient.close();
-}
+mongoClient.database = mongoDatabase;
 
 module.exports = {
-  mongoDatabase
+  mongoClient
 };

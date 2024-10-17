@@ -1,9 +1,9 @@
-const { mongoDatabase } = require('../db/mongoDriver.js');
+const { mongoClient } = require('../db/mongoDriver.js');
 
 Promise.all([
-  mongoDatabase.createCollection('movies'),
-  mongoDatabase.createCollection('genres'),
-  mongoDatabase.createCollection('actors'),
-  mongoDatabase.createCollection('directors'),
-  mongoDatabase.createCollection('studios')])
-.then(() => mongoDatabase.close())
+  mongoClient.database.createCollection('movies'),
+  mongoClient.database.createCollection('genres'),
+  mongoClient.database.createCollection('actors'),
+  mongoClient.database.createCollection('directors'),
+  mongoClient.database.createCollection('studios')])
+.then(() => mongoClient.close())
