@@ -57,7 +57,8 @@ router.get('/add', async function(req, res) {
 })
 
 router.post('/add', function(req, res) {
-  const body = req.query;
+  const body = req.body;
+  console.log(body)
   setTimeout(() => res.redirect('/mongo'), 2000)
   // res.redirect('/mongo')
 })

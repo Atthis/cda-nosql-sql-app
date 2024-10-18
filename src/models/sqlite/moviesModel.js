@@ -1,27 +1,33 @@
+function formatColumnSuffix(string) {
+  const capitalizedString = string.charAt(0).toUpperCase() + string.slice(1);
+  const formatedString = capitalizedString.substring(0, capitalizedString.length - 1);
+  return formatedString;
+}
+
 function formatResult(data) {
   const formatedData = JSON.parse(data);
 
-  if(formatedData.length >= 0) {
+  if (formatedData.length >= 0) {
     formatedData.forEach((el, i) => {
       formatedData[i] = JSON.parse(el);
-    })
+    });
   }
 
-  return formatedData
+  return formatedData;
 }
 
 function getMovies(db) {
-  const sql = "SELECT * FROM movies";
+  const sql = 'SELECT * FROM movies';
 
   return new Promise(function (resolve, reject) {
     db.all(sql, [], function (err, rows) {
       if (err) {
-        reject(err)
+        reject(err);
       } else {
-        resolve(rows)
+        resolve(rows);
       }
-    })
-  })
+    });
+  });
 }
 
 function getMoviesWithAllData(db) {
@@ -50,11 +56,11 @@ function getMoviesWithAllData(db) {
   return new Promise(function (resolve, reject) {
     db.all(sql, [], function (err, rows) {
       if (err) {
-        reject(err)
+        reject(err);
       } else {
         const results = rows;
 
-        const formatedResults = []
+        const formatedResults = [];
 
         results.forEach(result => {
           const formatedData = {
@@ -63,15 +69,15 @@ function getMoviesWithAllData(db) {
             directors: formatResult(result.directors),
             genres: formatResult(result.genres),
             studios: formatResult(result.studios),
-          }
+          };
 
           formatedResults.push(formatedData);
-        })
+        });
 
-        resolve(formatedResults)
+        resolve(formatedResults);
       }
-    })
-  })
+    });
+  });
 }
 
 function getMovieById(db, id) {
@@ -101,10 +107,10 @@ function getMovieById(db, id) {
   return new Promise(function (resolve, reject) {
     db.all(sql, id, async function (err, rows) {
       if (err) {
-        reject(err)
+        reject(err);
       } else {
         if (rows.length <= 0) {
-          resolve({result: null})
+          resolve({ result: null });
         } else {
           const result = await rows[0];
 
@@ -114,13 +120,13 @@ function getMovieById(db, id) {
             directors: formatResult(result.directors),
             genres: formatResult(result.genres),
             studios: formatResult(result.studios),
-          }
+          };
 
-          resolve(formatedData)
+          resolve(formatedData);
         }
       }
-    })
-  })
+    });
+  });
 }
 
 async function getMoviesByActorId(db, actorId) {
@@ -134,22 +140,189 @@ async function getMoviesByActorId(db, actorId) {
   return new Promise(function (resolve, reject) {
     db.all(sql, actorId, async function (err, rows) {
       if (err) {
-        reject(err)
+        reject(err);
       } else {
         if (rows.length <= 0) {
-          resolve({result: null})
+          resolve({ result: null });
         } else {
           const result = await rows;
-          resolve(result)
+          resolve(result);
         }
       }
-    })
+    });
+  });
+}
+
+async function updateMovie(db, id, formData) {
+  let currentData = {};
+  let insertedData = {};
+  let deletedData = {};
+
+  let updatedRootColumns = [];
+
+  // pour chaque donnée associée (ayant une table de liaison)
+  for (let formDataKey in formData) {
+    // si la clé est une donnée propre au film, on sort
+    if (formDataKey === 'title' || formDataKey === 'description' || formDataKey === 'releaseDate') {
+      updatedRootColumns.push(formDataKey);
+      continue;
+    }
+
+    // récupération des données de la base
+    const sql = `
+      SELECT ma.id${formatColumnSuffix(formDataKey)}
+      FROM movies_${formDataKey} ma
+      WHERE ma.idMovie = ?;
+    `;
+    const associatedData = await new Promise(function (resolve, reject) {
+      db.all(sql, id, async function (err, rows) {
+        if (err) {
+          reject(err);
+        } else {
+          if (rows.length <= 0) {
+            resolve({ result: null });
+          } else {
+            const result = await rows;
+            resolve(result);
+          }
+        }
+      });
+    });
+
+    // on ne conserve que les ids
+    currentData[formDataKey] = [];
+    associatedData.forEach(data => currentData[formDataKey].push(data[`id${formatColumnSuffix(formDataKey)}`]));
+
+    // on trie les id à ajouter et ceux à supprimer
+    const insertedValues = formData[formDataKey].filter(data => !currentData[formDataKey].includes(data));
+    const deletedValues = currentData[formDataKey].filter(data => !formData[formDataKey].includes(data));
+
+    // si il y a des données à ajouter/supprimer, on les ajoute aux objets correspondants
+    if (insertedValues.length > 0) {
+      insertedData[formDataKey] = insertedValues;
+    }
+
+    if (deletedValues.length > 0) {
+      deletedData[formDataKey] = deletedValues;
+    }
+
+    console.log(formDataKey);
+    console.log('new', formData[formDataKey]);
+    console.log('current', currentData[formDataKey]);
+  }
+
+  let insertionInfo = {};
+  let deletionInfo = {};
+
+  // modification des données propres au film
+  let rootDataSQLValuesString = '';
+  let newRootData= [];
+
+  updatedRootColumns.forEach((column, i) => {
+    rootDataSQLValuesString += `${column} = ?`;
+    newRootData.push(formData[column]);
+    if(i < updatedRootColumns.length -1) {
+      rootDataSQLValuesString += ', '
+    }
   })
+
+  const sql = `
+    UPDATE movies
+    SET ${rootDataSQLValuesString}
+    WHERE id = ?
+    RETURNING *;
+  `;
+
+  updateInfo = await new Promise(function (resolve, reject) {
+    db.all(sql, [...newRootData, id], async function (err, rows) {
+      if (err) {
+        reject(err);
+      } else {
+        if (rows.length <= 0) {
+          resolve({ result: null });
+        } else {
+          const result = await rows;
+          console.log(result)
+          resolve(result);
+        }
+      }
+    });
+  });
+
+  // insertion des nouvelles données dans la base
+  for (let key in insertedData) {
+    let insertedValuesString = '';
+    let insertedSQLData = [];
+
+    insertedData[key].forEach((value, i) => {
+      insertedValuesString += '(?, ?)';
+      insertedSQLData.push(...[id, value]);
+      if (i < insertedData[key].length - 1) {
+        insertedValuesString += ', ';
+      }
+    });
+    const sql = `
+      INSERT INTO movies_${key} (idMovie, id${formatColumnSuffix(key)})
+      VALUES ${insertedValuesString}
+      RETURNING idMovie, id${formatColumnSuffix(key)};
+    `;
+    insertionInfo[key] = await new Promise(function (resolve, reject) {
+      db.all(sql, insertedSQLData, async function (err, rows) {
+        if (err) {
+          reject(err);
+        } else {
+          if (rows.length <= 0) {
+            resolve({ result: null });
+          } else {
+            const result = await rows;
+            resolve(result);
+          }
+        }
+      });
+    });
+  }
+
+  // suppression des données dans la base
+  for (let key in deletedData) {
+    let deletedValuesString = '';
+    let deletedSQLData = [];
+
+    deletedData[key].forEach((value, i) => {
+      deletedValuesString += '?';
+      deletedSQLData.push(value);
+      if (i < deletedData[key].length - 1) {
+        deletedValuesString += ', ';
+      }
+    });
+    const sql = `
+      DELETE FROM movies_${key}
+      WHERE idMovie = ? AND id${formatColumnSuffix(key)} IN (${deletedValuesString})
+      RETURNING idMovie, id${formatColumnSuffix(key)};
+    `;
+
+    deletionInfo[key] = await new Promise(function (resolve, reject) {
+      db.all(sql, [id, ...deletedSQLData], async function (err, rows) {
+        if (err) {
+          reject(err);
+        } else {
+          if (rows.length <= 0) {
+            resolve({ result: null });
+          } else {
+            const result = await rows;
+            resolve(result);
+          }
+        }
+      });
+    });
+  }
+
+  return { updateInfo, insertionInfo, deletionInfo };
 }
 
 module.exports = {
   getMovies,
   getMoviesWithAllData,
   getMovieById,
-  getMoviesByActorId
-}
+  getMoviesByActorId,
+  updateMovie,
+};

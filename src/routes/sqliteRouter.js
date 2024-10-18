@@ -3,7 +3,7 @@ const router = express.Router();
 
 const sqliteDB = require('../db/sqliteDriver.js');
 
-const { getMovies, getMoviesWithAllData, getMovieById, getMoviesByActorId } = require('../models/sqlite/moviesModel.js');
+const { getMovies, getMoviesWithAllData, getMovieById, getMoviesByActorId, updateMovie } = require('../models/sqlite/moviesModel.js');
 const { getActors, getActorById, updateActor } = require('../models/sqlite/actorsModel.js');
 
 const { generateBaseSqlite } = require('../views/baseSqlite.js');
@@ -38,6 +38,15 @@ router.get('/movies/:id', async function (req, res) {
   const page = generateBaseSqlite(data.movie.title, body);
 
   res.send(page);
+});
+
+router.get('/movies/:id/update', async function (req, res) {
+  const movieId = req.params.id;
+
+  const result = await updateMovie(sqliteDB, movieId, {title: "mon mega film", description: "ça c'est du film!", actors: [1,2,3], genres: [3, 4]});
+
+  // console.log(result)
+  res.json(result)
 });
 
 router.get('/add', async function (req, res) {
