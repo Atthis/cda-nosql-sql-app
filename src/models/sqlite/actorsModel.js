@@ -26,7 +26,38 @@ async function getActorById(db, id) {
   })
 }
 
+async function updateActor(db, id, formData) {
+  const columns = Object.keys(formData);
+  const values = Object.values(formData);
+
+  let queryData = '';
+
+  columns.forEach((column, i) => {
+    queryData += `${column} = ?`
+    if(i < columns.length - 1) {
+      queryData += ', ';
+    }
+  })
+
+  const sql = `
+    UPDATE actors
+    SET ${queryData}
+    WHERE id = ?
+  `
+
+  return new Promise(function (resolve, reject) {
+    db.all(sql, [...values, id], function (err, rows) {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(rows[0])
+      }
+    })
+  })
+}
+
 module.exports = {
   getActors,
-  getActorById
+  getActorById,
+  updateActor
 }

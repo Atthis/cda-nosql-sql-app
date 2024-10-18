@@ -26,3 +26,9 @@ https://www.mongodb.com/docs/manual/reference/operator/update/positional/
 ### SQLite
 
 modification de la table acteur seulement.
+
+## ToDO
+
+- update liste acteurs d'un film
+- insert d'un film avec données associées existantes (acteurs, ...)
+- front avec formulaire
