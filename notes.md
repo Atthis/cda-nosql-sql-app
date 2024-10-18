@@ -29,6 +29,15 @@ modification de la table acteur seulement.
 
 ## ToDO
 
-- update liste acteurs d'un film
+### update liste acteurs d'un film
+
+#### Mongo
+
+- recevoir les données du formulaire
+- récupérer les données de la base
+- comparer les 2 jeux de données
+- mettre dans un tableau les ajout, dans un autre les suppression.
+
+
 - insert d'un film avec données associées existantes (acteurs, ...)
 - front avec formulaire

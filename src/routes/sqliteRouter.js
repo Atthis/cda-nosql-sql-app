@@ -65,7 +65,7 @@ router.get('/actors/:id', async function (req, res) {
 router.get('/actors/:id/update', async function (req, res) {
   const actorId = req.params.id;
 
-  const result = updateActor(sqliteDB, actorId, { name: 'Jojo', biography: 'meilleur acteur du monde' });
+  const result = await updateActor(sqliteDB, actorId, { name: 'Jojo', biography: 'meilleur acteur du monde' });
 
   res.send(result);
 });

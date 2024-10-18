@@ -4,7 +4,7 @@ const router = express.Router();
 
 const { mongoClient } = require('../db/mongoDriver');
 
-const { getMovies, getMovieById, getMoviesByActorId } = require('../models/mongo/moviesModel.js')
+const { getMovies, getMovieById, getMoviesByActorId, updateMovie } = require('../models/mongo/moviesModel.js')
 
 const { getActors, updateActor, getActorById } = require('../models/mongo/actorsModel.js')
 
@@ -37,6 +37,15 @@ router.get('/movies/:id', async function(req, res) {
   res.send(page)
 })
 
+router.get('/movies/:id/update', async function(req, res) {
+  const movieId = req.params.id;
+
+  const result = await updateMovie(mongoClient, movieId, {title: "mon mega film", actors: [{id: "670fbb656722eb7facbd188f", name: "Houyo"}, {id: "670fbb656722eb7facbd1890", name: "Joseph Gordon-Levitt"}, {id: "670fbb656722eb7facbd1892", name: "Marlon Brando"}]});
+
+  console.log(result)
+  res.json(result)
+})
+
 router.get('/add', async function(req, res) {
   const data = {};
   data.actors = await getActors(mongoClient);
@@ -53,12 +62,6 @@ router.post('/add', function(req, res) {
   // res.redirect('/mongo')
 })
 
-router.get('/update-test', function(req, res) {
-  const result = updateActor(mongoClient, "670fbb656722eb7facbd188f", {biography: "Acteur célèbre connu pour ses rôles dans des films primés!!!!", name: "Houyo"});
-
-  res.send(result)
-})
-
 router.get('/actors/:id', async function(req, res) {
   const actorId = req.params.id;
 
@@ -71,6 +74,14 @@ router.get('/actors/:id', async function(req, res) {
   const page = generateBaseMongo(data.actor.name, body);
 
   res.send(page)
+})
+
+router.get('/actor/:id/update', async function(req, res) {
+  const actorId = req.params.id;
+
+  const result = await updateActor(mongoClient, actorId, {biography: "Acteur célèbre connu pour ses rôles dans des films primés!!!!", name: "Houyo"});
+
+  res.json(result)
 })
 
 module.exports = router;
