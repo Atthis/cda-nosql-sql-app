@@ -40,12 +40,13 @@ router.get('/movies/:id', async function (req, res) {
   res.send(page);
 });
 
-router.get('/movies/:id/update', async function (req, res) {
+router.post('/movies/:id/update', async function (req, res) {
+  // format attendu : {title: "mon mega film", description: "ça c'est du film!", actors: [1,2,3], genres: [3, 4]}
   const movieId = req.params.id;
+  const data = req.body;
 
-  const result = await updateMovie(sqliteDB, movieId, {title: "mon mega film", description: "ça c'est du film!", actors: [1,2,3], genres: [3, 4]});
+  const result = await updateMovie(sqliteDB, movieId, data);
 
-  // console.log(result)
   res.json(result)
 });
 
@@ -71,10 +72,12 @@ router.get('/actors/:id', async function (req, res) {
   res.send(page);
 });
 
-router.get('/actors/:id/update', async function (req, res) {
+router.post('/actors/:id/update', async function (req, res) {
+  // format attendu : { name: 'Jojo', biography: 'meilleur acteur du monde' }
   const actorId = req.params.id;
+  const data = req.body;
 
-  const result = await updateActor(sqliteDB, actorId, { name: 'Jojo', biography: 'meilleur acteur du monde' });
+  const result = await updateActor(sqliteDB, actorId, data);
 
   res.send(result);
 });

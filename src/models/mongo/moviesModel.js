@@ -38,8 +38,6 @@ async function getMoviesByActorId(db, actorId) {
 async function updateMovie(db, id, formData) {
   const movieId = { _id: mongo.ObjectId.createFromHexString(id) };
 
-  console.log(movieId)
-
   const updatedMovieInfos = await db.run('movies').then(async coll => {
     return coll.updateOne(movieId, {
       $set: formData,

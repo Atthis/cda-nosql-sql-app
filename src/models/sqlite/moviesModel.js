@@ -211,43 +211,45 @@ async function updateMovie(db, id, formData) {
     console.log('current', currentData[formDataKey]);
   }
 
+  let updateInfo;
   let insertionInfo = {};
   let deletionInfo = {};
 
   // modification des données propres au film
-  let rootDataSQLValuesString = '';
-  let newRootData= [];
+  if(updatedRootColumns.length > 0){
+    let rootDataSQLValuesString = '';
+    let newRootData= [];
 
-  updatedRootColumns.forEach((column, i) => {
-    rootDataSQLValuesString += `${column} = ?`;
-    newRootData.push(formData[column]);
-    if(i < updatedRootColumns.length -1) {
-      rootDataSQLValuesString += ', '
-    }
-  })
-
-  const sql = `
-    UPDATE movies
-    SET ${rootDataSQLValuesString}
-    WHERE id = ?
-    RETURNING *;
-  `;
-
-  updateInfo = await new Promise(function (resolve, reject) {
-    db.all(sql, [...newRootData, id], async function (err, rows) {
-      if (err) {
-        reject(err);
-      } else {
-        if (rows.length <= 0) {
-          resolve({ result: null });
-        } else {
-          const result = await rows;
-          console.log(result)
-          resolve(result);
-        }
+    updatedRootColumns.forEach((column, i) => {
+      rootDataSQLValuesString += `${column} = ?`;
+      newRootData.push(formData[column]);
+      if(i < updatedRootColumns.length -1) {
+        rootDataSQLValuesString += ', '
       }
+    })
+
+    const sql = `
+      UPDATE movies
+      SET ${rootDataSQLValuesString}
+      WHERE id = ?
+      RETURNING *;
+    `;
+
+    updateInfo = await new Promise(function (resolve, reject) {
+      db.all(sql, [...newRootData, id], async function (err, rows) {
+        if (err) {
+          reject(err);
+        } else {
+          if (rows.length <= 0) {
+            resolve({ result: null });
+          } else {
+            const result = await rows;
+            resolve(result);
+          }
+        }
+      });
     });
-  });
+  }
 
   // insertion des nouvelles données dans la base
   for (let key in insertedData) {

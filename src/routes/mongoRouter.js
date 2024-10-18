@@ -1,30 +1,34 @@
 const express = require('express');
 const router = express.Router();
 
-
 const { mongoClient } = require('../db/mongoDriver');
 
-const { getMovies, getMovieById, getMoviesByActorId, updateMovie } = require('../models/mongo/moviesModel.js')
+const { getMovies, getMovieById, getMoviesByActorId, updateMovie } = require('../models/mongo/moviesModel.js');
 
-const { getActors, updateActor, getActorById } = require('../models/mongo/actorsModel.js')
+const { getActors, updateActor, getActorById } = require('../models/mongo/actorsModel.js');
 
-const { generateBaseMongo } = require('../views/baseMongo.js')
-const { generateAddForm } = require('../views/addForm.js')
-const { getIndex } = require('../views/home.js')
+const { generateBaseMongo } = require('../views/baseMongo.js');
+const { generateAddForm } = require('../views/addForm.js');
+const { getIndex } = require('../views/home.js');
 const { generateMovieCard } = require('../views/movie.js');
 const { generateActorCard } = require('../views/actor.js');
 
-router.get('/', async function(req, res) {
+router.get('/', async function (req, res) {
   const data = {};
   data.movies = await getMovies(mongoClient);
 
   const body = getIndex(data);
-  const page = generateBaseMongo('tous les films', body)
+  const page = generateBaseMongo('tous les films', body);
 
   res.send(page);
-})
+});
 
-router.get('/movies/:id', async function(req, res) {
+router.get('/movies', async function (req, res) {
+  const results = await getMovies(mongoClient);
+  res.json(results);
+});
+
+router.get('/movies/:id', async function (req, res) {
   const movieId = req.params.id;
 
   const data = {};
@@ -34,19 +38,20 @@ router.get('/movies/:id', async function(req, res) {
   const body = generateMovieCard(data);
   const page = generateBaseMongo(data.movie.title, body);
 
-  res.send(page)
-})
+  res.send(page);
+});
 
-router.get('/movies/:id/update', async function(req, res) {
+router.post('/movies/:id/update', async function (req, res) {
+  // format attendu : {title: "mon mega film", actors: [{id: "670fbb656722eb7facbd188f", name: "Houyo"}, {id: "670fbb656722eb7facbd1890", name: "Joseph Gordon-Levitt"}, {id: "670fbb656722eb7facbd1892", name: "Marlon Brando"}]}
   const movieId = req.params.id;
+  const data = req.body;
 
-  const result = await updateMovie(mongoClient, movieId, {title: "mon mega film", actors: [{id: "670fbb656722eb7facbd188f", name: "Houyo"}, {id: "670fbb656722eb7facbd1890", name: "Joseph Gordon-Levitt"}, {id: "670fbb656722eb7facbd1892", name: "Marlon Brando"}]});
+  const result = await updateMovie(mongoClient, movieId, data);
 
-  console.log(result)
-  res.json(result)
-})
+  res.json(result);
+});
 
-router.get('/add', async function(req, res) {
+router.get('/add', async function (req, res) {
   const data = {};
   data.actors = await getActors(mongoClient);
 
@@ -54,16 +59,16 @@ router.get('/add', async function(req, res) {
   const page = generateBaseMongo('ajouter un film', body);
 
   res.send(page);
-})
+});
 
-router.post('/add', function(req, res) {
+router.post('/add', function (req, res) {
   const body = req.body;
-  console.log(body)
-  setTimeout(() => res.redirect('/mongo'), 2000)
+  console.log(body);
+  setTimeout(() => res.redirect('/mongo'), 2000);
   // res.redirect('/mongo')
-})
+});
 
-router.get('/actors/:id', async function(req, res) {
+router.get('/actors/:id', async function (req, res) {
   const actorId = req.params.id;
 
   const data = {};
@@ -74,15 +79,17 @@ router.get('/actors/:id', async function(req, res) {
   const body = generateActorCard(data);
   const page = generateBaseMongo(data.actor.name, body);
 
-  res.send(page)
-})
+  res.send(page);
+});
 
-router.get('/actor/:id/update', async function(req, res) {
+router.post('/actors/:id/update', async function (req, res) {
+  // format attendu : {biography: "Acteur célèbre connu pour ses rôles dans des films primés!!!!", name: "Houyo"}
   const actorId = req.params.id;
+  const data = req.body;
 
-  const result = await updateActor(mongoClient, actorId, {biography: "Acteur célèbre connu pour ses rôles dans des films primés!!!!", name: "Houyo"});
+  const result = await updateActor(mongoClient, actorId, data);
 
-  res.json(result)
-})
+  res.json(result);
+});
 
 module.exports = router;

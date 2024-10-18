@@ -43,6 +43,7 @@ async function updateActor(db, id, formData) {
     UPDATE actors
     SET ${queryData}
     WHERE id = ?
+    RETURNING *;
   `
 
   return new Promise(function (resolve, reject) {

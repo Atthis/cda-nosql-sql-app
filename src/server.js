@@ -9,7 +9,8 @@ const { homeView } = require('./views/rootPage.js')
 const sqlite = require('./routes/sqliteRouter');
 const mongodb = require('./routes/mongoRouter');
 
-app.use(express.urlencoded({ extended: true }))
+// app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 app.use(express.static(path.join(__dirname, "static")))
 
 app.get('/', (req, res) => {
@@ -21,5 +22,5 @@ app.use('/sqlite', sqlite);
 app.use('/mongo', mongodb);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`App listening on port ${port}`)
 })
